@@ -1,0 +1,18 @@
+properties([buildDiscarder(logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '', daysToKeepStr: '', numToKeepStr: '5'))])
+
+pipeline {
+    agent any
+
+    stages {
+		stage('Checkout repo with index.php'){
+			steps{
+				checkout([$class: 'GitSCM', branches: [[name: '*/main']], extensions: [], userRemoteConfigs: [[credentialsId: 'github_ssh_key', url: 'git@github.com:i0j1ech/source_repo.git']]])
+			}
+	}
+	stage('upload index.php to web server'){
+		steps{
+			sshPublisher(publishers: [sshPublisherDesc(configName: 'lemp', transfers: [sshTransfer(cleanRemote: false, excludes: '', execCommand: '''
+''', execTimeout: 120000, flatten: false, makeEmptyDirs: false, noDefaultExcludes: false, patternSeparator: '[, ]+', remoteDirectory: '', remoteDirectorySDF: false, removePrefix: '', sourceFiles: 'index.php')], usePromotionTimestamp: false, useWorkspaceInPromotion: false, verbose: false)])
+		}
+	}
+}
